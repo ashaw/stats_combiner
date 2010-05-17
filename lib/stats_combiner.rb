@@ -11,8 +11,8 @@ class StatsCombiner
   # s = StatsCombiner.new({
   #       :api_key => 'your_key',
   #       :host => 'talkingpointsmemo.com',
-  #       :ttl => '3600',
-  #       :story_count => '10',
+  #       :ttl => 3600,
+  #       :story_count => 10,
   #       :flat_file => '/var/www/html/topten.html'
   #     })  
   def initialize(opts = {})
@@ -54,8 +54,12 @@ class StatsCombiner
       end
     end
   end
- 
-#protected
+
+  def set_rewrite_rule
+  
+  end 
+
+protected
 
   # Set up the database.
   # This is done once every timeout cycle
@@ -88,24 +92,63 @@ class StatsCombiner
   end
   
   # grab the data, and parse it into something we can use
-  def parse
+  # and combine it
+  def combine
     host = @init_options[:host]
     api_key = @init_options[:api_key]
     @url = "http://api.chartbeat.com/toppages/?host=#{host}&limit=50&apikey=#{api_key}"
     
     @data = open(@url).read
-    @data = Crack::JSON.parse(@url)
-  end
+    @data = Crack::JSON.parse(@data)
   
-  # Combine the data.
-  # Where the magic happens
-  def combine
+    @data.each do |datum|
+      visitors = datum['visitors']
+      path = datum['path']
+      title = datum['i']
+      
+      # if the story is already in the db, combine visitor count
+      # otherwise insert a new row
+      existing_story = @db[:stories].where(:title => title).first || ''
+      
+      if not existing_story.empty?
+        existing_visitors = existing_story[:visitors]
+        @db[:stories].where(:title => title).update :visitors => existing_visitors + visitors
+      else
+        @db[:stories].insert({
+          :title => title,
+          :visitors => visitors,
+          :path => path
+         })
+      end
+      
+    end
   end
   
   # Pull data out of the db, write the flat file and dump the db.
   # This is done once every timeout cycle.
   def report_and_cleanup
-    self.destroy
+   top_ten = @db[:stories].all[0..9]
+   now = Time.now
+   flat_file = @init_options[:flat_file]
+  
+   html = '<ul>'
+
+   top_ten.each do |story|
+     title = story[:title]
+     path = story[:path]
+     visitors = story[:visitors]
+    
+     html << "<li><a href=\"#{path}\">#{title}</a></li> <!-- #{visitors} -->"
+   end
+    
+   html << '</ul>'
+   html << "<!-- This report was generated at #{now} -->"
+  
+   flat_file = File.new(flat_file, "w+")
+   flat_file.write(html)
+   flat_file.close
+   
+   self.destroy
   end
 
 end
