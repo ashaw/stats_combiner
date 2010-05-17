@@ -29,28 +29,28 @@ class StatsCombiner
   #   :verbose => true
   #  })
   def run(opts = {})
-  	now = Time.now
+    now = Time.now
     if File::exists?(@db_file)
-    	@db = Sequel.sqlite(@db_file)
-    	@table_create_time = self.table_create_time
-    	@table_destroy_time = @table_create_time + @init_options[:ttl]
-    	@ttl = @table_destroy_time.to_i - Time.now.to_i
-    	
-    	if now.to_i < @table_destroy_time.to_i 
-     	 self.combine
-     	 if opts[:verbose]
-     	 	puts "Combining. DB has #{@ttl} seconds to live"
-     	 end
-    	else
-    	 self.report_and_cleanup
-    	 if opts[:verbose]
-    	 	puts "ttl expired. reporting and cleaning up"
-    		end
-    	end
+      @db = Sequel.sqlite(@db_file)
+      @table_create_time = self.table_create_time
+      @table_destroy_time = @table_create_time + @init_options[:ttl]
+      @ttl = @table_destroy_time.to_i - Time.now.to_i
+      
+      if now.to_i < @table_destroy_time.to_i 
+       self.combine
+       if opts[:verbose]
+        puts "Combining. DB has #{@ttl} seconds to live"
+       end
+      else
+       self.report_and_cleanup
+       if opts[:verbose]
+        puts "ttl expired. reporting and cleaning up"
+        end
+      end
     else
       self.setup
       if opts[:verbose]
-      	puts "No DB detected. I set one up"
+        puts "No DB detected. I set one up"
       end
     end
   end
@@ -80,11 +80,11 @@ class StatsCombiner
   end
   
   def table_create_time
-  	@db[:create_time].select(:timestamp).first[:timestamp]
+    @db[:create_time].select(:timestamp).first[:timestamp]
   end
   
   def destroy
-  	FileUtils.rm_rf(@db_file)
+    FileUtils.rm_rf(@db_file)
   end
   
   # grab the data, and parse it into something we can use
@@ -105,7 +105,7 @@ class StatsCombiner
   # Pull data out of the db, write the flat file and dump the db.
   # This is done once every timeout cycle.
   def report_and_cleanup
-  	self.destroy
+    self.destroy
   end
 
 end
