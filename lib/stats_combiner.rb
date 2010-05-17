@@ -3,6 +3,7 @@ require 'fileutils'
 require 'rubygems'
 require 'crack/json'
 require 'sequel'
+require 'filterer'
 
 module StatsCombiner
 
@@ -142,13 +143,14 @@ module StatsCombiner
 
 		 #filter the array if applicable, then narrow down to top ten
      if @filters
-     		q = self.list_filters
-				stories.each do |story|
-					q.apply_filters!({
-							:title => story[:title],
-							:path => story[:path],	
-					})
-				end     	
+# FIXME: get filtering working
+#      		q = self.list_filters
+# 				stories.each do |story|
+# 					q.apply_filters!({
+# 							:title => story[:title],
+# 							:path => story[:path],	
+# 					})
+# 				end     	
      end
 
 		 top_ten = stories[0..9]

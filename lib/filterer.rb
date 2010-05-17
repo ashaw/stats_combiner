@@ -7,7 +7,6 @@ module StatsCombiner
     #
     def initialize()
       @filters ||= []
-      #clear
     end 
     
     
@@ -40,7 +39,7 @@ module StatsCombiner
       @filters << filter
     end
   
-    
+    # sanity check
     def list_filters
       @filters.each do |filter|
         filter
@@ -49,7 +48,7 @@ module StatsCombiner
     end
     
     # a datum comes in from chartbeat data, and is manipulated
-    # with the apply_filters method
+    # with the apply_filters method, and sent back to Combiner to write out
     #
     # Internal Usage:
     #  f.apply_filters({
