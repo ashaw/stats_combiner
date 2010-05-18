@@ -179,6 +179,7 @@ module StatsCombiner
      flat_file.write(html)
      flat_file.close
      
+     #Destroy the DB and start the journey over again.
      self.destroy
     end
   end
