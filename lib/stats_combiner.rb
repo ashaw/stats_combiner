@@ -3,7 +3,7 @@ require 'fileutils'
 require 'rubygems'
 require 'crack/json'
 require 'sequel'
-require 'filterer'
+require File.dirname(__FILE__) + '/filterer'
 
 module StatsCombiner
 
@@ -18,7 +18,6 @@ module StatsCombiner
 		#       :api_key => 'your_key',
 		#       :host => 'talkingpointsmemo.com',
 		#       :ttl => 3600,
-		#       :story_count => 10,
 		#       :flat_file => '/var/www/html/topten.html'
 		#     })  
 		def initialize(opts = {})
@@ -30,20 +29,22 @@ module StatsCombiner
 			@db_file = "stats_db.sqlite3"
 		end
 
-		#give Combiner filters from StatsCombiner::Filterer
-		def send_filters(filters)
-			@filters = filters
-		end
-
 		# check where we are in the cycle
 		# and run the necessary functions
 		# call this after initializing StatsCombiner
 		# 
 		# Usage:
 		#  s.run({
+		#   :filters => e.filters (result of a StatsCombiner::Filterer filters hash)
 		#   :verbose => true
 		#  })
 		def run(opts = {})
+			{ :filters => nil,
+				:verbose => false
+			}.merge!(opts)
+			
+			@filters = opts[:filters]
+			
 			now = Time.now
 			if File::exists?(@db_file)
 				@db = Sequel.sqlite(@db_file)
@@ -136,47 +137,42 @@ module StatsCombiner
 			end
 		end
 		
-		# Pull data out of the db, write the flat file and dump the db.
+		# Pull data out of the db, apply filters and write the flat file and dump the db.
 		# This is done once every timeout cycle.
 		def report_and_cleanup
-     	stories = @db[:stories]
+     	stories = @db[:stories].all
 
 		 #filter the array if applicable, then narrow down to top ten
      if @filters
-# FIXME: get filtering working
-#      		q = self.list_filters
-# 				stories.each do |story|
-# 					q.apply_filters!({
-# 							:title => story[:title],
-# 							:path => story[:path],	
-# 					})
-# 				end     	
+				stories.each do |story|					
+					StatsCombiner::Filterer.apply_filters!(@filters,story)
+				end     	
      end
-
+     
+     #sweep away the excludes
+     stories.reject! {|story| story if story[:title].nil? || story[:path].nil? }
+		 
 		 top_ten = stories[0..9]
 		 now = Time.now
 		 flat_file = @init_options[:flat_file]
 		 host = @init_options[:host]
-
 		 
-		 html = '<ul>'
+		 #write it out
+		 html = '<ol>'
 	
 		 top_ten.each do |story|
 			 title = story[:title]
 			 path = story[:path]
 			 visitors = story[:visitors]
-			 prefix = ''
 			 
-			 if not prefix.empty?
-				domain_divider = '.'
-			 else
-				domain_divider = ''
+			 if not story[:prefix].nil?
+			 	prefix = story[:prefix] + '.'
 			 end
-			
-			 html << "<li><a href=\"http://#{prefix}#{domain_divider}#{host}/#{path}\">#{title}</a></li> <!-- #{visitors} -->"
+			 
+			 html << "<li><a href=\"http://#{prefix}#{host}#{path}\">#{title}</a></li> <!-- #{visitors} -->"
 		 end
 			
-		 html << '</ul>'
+		 html << '</ol>'
 		 html << "<!-- This report was generated at #{now} -->"
 		
 		 flat_file = File.new(flat_file, "w+")

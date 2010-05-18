@@ -2,3 +2,4 @@ tpm_combiner.rb
 *.DS_Store
 *stats_db.sqlite3
 rewrites.rb
+test
