@@ -3,3 +3,4 @@ tpm_combiner.rb
 *stats_db.sqlite3
 rewrites.rb
 test
+spec/spec_credentials.rb
