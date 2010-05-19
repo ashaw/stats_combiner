@@ -81,6 +81,7 @@ module StatsCombiner
             datum[:prefix] = filter[:rule][:prefix]
         end
         
+        # TODO - refactor this to make it all a regex search/replace
         #set suffixes where they match path regexes
         # if :modify_path => true, replace on regex
         # if :append_path => true, append to end of path
