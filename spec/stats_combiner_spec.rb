@@ -6,6 +6,7 @@ require 'spec_credentials'
 
 require 'spec'
 require 'timecop'
+require 'hpricot'
 
 
 describe "an unfiltered StatsCombiner cycle" do
@@ -187,6 +188,81 @@ describe "basic Filterer filtering" do
   
 end
 
+# best way to do this (without prying open the Class) might be 
+# to define a set of filters, timetravel our way to the flat file stage, 
+# open it and parse the HTML with hpricot for rules.
+# Caveats - filters will be pretty specific 
+# to whatever account is running this suite. So, proceed with caution.
 describe "filtered StatsCombining" do
+
+  before :each do
+    @flat_file = File.dirname(__FILE__) + '/test_flat_file.html'
+    @ttl = 3600
+    @s = StatsCombiner::Combiner.new({
+      :ttl => @ttl, 
+      :host=> HOST,
+      :api_key=> KEY,
+      :flat_file => @flat_file
+    })
+    @db_file = File.dirname(__FILE__) + '/stats_db.sqlite3'
+  end
+
+  it 'should run its way through the cycle and publish out a top ten list according to filter rules' do
+  
+    # first, let's set the filters we want to apply
+    e = StatsCombiner::Filterer.new
+    e.add :prefix => 'tpmdc', :title_regex => /\| TPMDC/, :modify_title => true
+    e.add :prefix => 'tpmmuckraker', :title_regex => /\| TPMMuckraker/, :modify_title => true
+    e.add :prefix => 'tpmtv', :title_regex => /\| TPMTV/, :modify_title => true
+    e.add :prefix => 'tpmcafe', :title_regex => /\| TPMCafe/, :modify_title => true
+    e.add :prefix => 'tpmlivewire', :title_regex => /\| TPM LiveWire/, :modify_title => true
+    e.add :prefix => 'polltracker', :title_regex => /\| TPM PollTracker/, :modify_title => true
+    e.add :prefix => 'www', :title_regex => /\|.*$/, :modify_title => true  
+    e.add :path_regex => /(\/$|\/index.php$)/, :exclude => true  
+    
+    #now, let's go through the rigamarole to get this thing pubbed.
+    # run to setup db
+    @s.run :filters => e.filters
+    # run again to start publishing
+    @s.run :filters => e.filters
+    # timetravel to pub time and do it.
+    # set Time.now to 5 seconds past ttl
+    t = Time.now
+    Timecop.travel(t + @ttl + 5)
+    @s.run :filters => e.filters
+    
+    #sanity check
+    File.exist?(@flat_file).should == true
+    
+    list = File.open(@flat_file).read
+    list = Hpricot(list)
+    
+    # collect urls and titles
+    urls = []
+    titles = []
+    list.search("a").each do |a|
+      urls << a.attributes['href']
+      titles << a.inner_html
+    end  
+    
+    #let's make sure we have 10 stories
+    urls.size.should eql 10
+    
+    #pull prefixes from rules array
+    prefixes = e.filters.collect { |filter| filter[:rule][:prefix] }
+    
+    #test prefixes against subdomains
+    urls.each do |url|
+        subdomain = URI.parse(url).host.split('.')[0]
+        prefixes.include?(subdomain).should == true
+    end
+    
+    Timecop.return
+  end
+
+  after :all do
+    FileUtils.rm_rf(@db_file)
+    FileUtils.rm_rf(@flat_file)
+  end
 
 end
