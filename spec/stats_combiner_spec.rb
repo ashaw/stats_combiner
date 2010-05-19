@@ -94,7 +94,7 @@ describe "an unfiltered StatsCombiner cycle" do
     
     File.exist?(@flat_file).should == true
     File.exist?(@db_file).should == false
-    
+
     Timecop.return
   end
   
@@ -143,6 +143,15 @@ describe "basic Filterer filtering" do
     
     result = StatsCombiner::Filterer.apply_filters!(@f.filters,datum)
     result[:path].should eql("/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php")
+    
+    @f.filters.clear
+    #let's try setting pages to 1 on slideshows and galleries
+    @f.add :path_regex => /(\?page=.*$)/, :suffix => '?page=1', :modify_path => true
+ 
+    datum = {:visitors=>366, :created_at=>nil, :path=>"/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?page=5", :id=>3, :title=>"With Specter Suffering, White House And GOP Looking At Surging Sestak | TPMDC"}
+    
+    result = StatsCombiner::Filterer.apply_filters!(@f.filters,datum)
+    result[:path].should eql("/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?page=1")
   end
   
   it 'should set a suffix where it matches a path_regex and append a path where indicated' do
@@ -151,6 +160,40 @@ describe "basic Filterer filtering" do
     
     result = StatsCombiner::Filterer.apply_filters!(@f.filters,datum)
     result[:path].should eql("/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?id=1&ref=mp")
+  end
+
+  #?id=need&ref=dump => ?id=need
+  #?id=need => ?id=need&ref=new
+  #?ref=dump => ?ref=new
+  #<none> => ?ref=new  
+  it 'deal with query strings' do
+    
+    @f.add :path_regex => /(\?ref=.*$|\&ref=.*$|)/, :suffix => '', :modify_path => true
+    @f.add :path_regex => /(\?id=.*$|\?page=.*$|\?img=.*$)/, :suffix => '&ref=new', :append_to_path => true
+    @f.add :path_regex => /.php$/, :suffix => '?ref=new', :append_to_path => true
+
+   
+   # ?id=need&ref=dump => ?id=need&ref=new
+ 
+   datum = {:visitors=>366, :created_at=>nil, :path=>"/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?id=1&ref=killthis", :id=>3, :title=>"With Specter Suffering, White House And GOP Looking At Surging Sestak | TPMDC"}    
+   
+   result = StatsCombiner::Filterer.apply_filters!(@f.filters,datum)
+   result[:path].should eql("/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?id=1&ref=new")    
+ 
+   #?id=need => ?id=need&ref=new
+
+   datum = {:visitors=>366, :created_at=>nil, :path=>"/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?id=1&ref=killthis", :id=>3, :title=>"With Specter Suffering, White House And GOP Looking At Surging Sestak | TPMDC"}    
+   
+   result = StatsCombiner::Filterer.apply_filters!(@f.filters,datum)
+   result[:path].should eql("/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?id=1&ref=new")      
+
+   #<none> => ?ref=need
+
+   datum = {:visitors=>366, :created_at=>nil, :path=>"/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php", :id=>3, :title=>"With Specter Suffering, White House And GOP Looking At Surging Sestak | TPMDC"}    
+   
+   result = StatsCombiner::Filterer.apply_filters!(@f.filters,datum)
+   result[:path].should eql("/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?ref=new")         
+    
   end
   
   it 'should nil out data where exclude is true' do

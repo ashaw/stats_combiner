@@ -140,7 +140,7 @@ module StatsCombiner
     # Pull data out of the db, apply filters and write the flat file and dump the db.
     # This is done once every timeout cycle.
     def report_and_cleanup
-      stories = @db[:stories].all
+      stories = @db[:stories].order(:visitors.desc).all
 
      #filter the array if applicable, then narrow down to top ten
      if @filters
