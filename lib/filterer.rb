@@ -74,59 +74,44 @@ module StatsCombiner
         :prefix => nil
       }.merge!(datum)
       
-      @datum = datum
-      
       filters.each do |filter|
-				 @filter = filter[:rule] 
-				 
-				 self.title_to_prefix
-				 self.suffix_to_path
-				 self.modify_title
-				 self.apply_exclude
-				 
-				 @filter.clear
+      
+        # set prefixes where they match title regexes
+        # /\| TPMDC/ => http://tpmdc
+        if (filter[:rule][:prefix] && filter[:rule][:title_regex]) && datum[:title].match(filter[:rule][:title_regex])
+            datum[:prefix] = filter[:rule][:prefix]
+        end
+        
+        # modify path => '?q=new_suffix'
+        # append to path with regex replacement variables => '\1&new_suffix'
+        if (filter[:rule][:suffix] && filter[:rule][:path_regex]) && datum[:path].match(filter[:rule][:path_regex])
+              datum[:path].gsub!(filter[:rule][:path_regex],filter[:rule][:suffix])
+        end
+        
+        # apply title mods
+        # modify_title => true /==> 
+        # modify_title => "DC Central"
+        # title_regex => /| TPMDC/,  modify_title => '\1 Central' ==> TPMDC Central
+        if filter[:rule][:modify_title]
+        	filter[:rule][:modify_title] = '' unless filter[:rule][:modify_title].is_a?(String)
+          datum[:title].gsub!(filter[:rule][:title_regex], filter[:rule][:modify_title])
+          datum[:title].strip!
+        end
+        
+        # apply excludes. 
+        # this should take out the whole record if it matches a path or title regex
+        if filter[:rule][:exclude] && ((filter[:rule][:path_regex].is_a?(Regexp) && datum[:path].match(filter[:rule][:path_regex])) || (filter[:rule][:title_regex].is_a?(Regexp) && datum[:title].match(filter[:rule][:title_regex])))        
+            # nil out datum.
+            # StatsCombiner::Combiner will sweep away the nils later
+            datum[:title] = datum[:path] = datum[:prefix] = nil
+        end
+      
       end
     
-     datum
+      datum
      
     end
-	
-	protected
-	
-		#set prefixes where they match title regexes
-    def self.title_to_prefix
-			if (@filter[:prefix] && @filter[:title_regex]) && @datum[:title].match(@filter[:title_regex])
-					@datum[:prefix] = @filter[:prefix]
-			end  
-  	end
-
-		#set suffixes where they match path regexes
-		# if :modify_path => true, replace on regex
-		# if :append_path => true, append to end of path
-  	def self.suffix_to_path
-			if (@filter[:suffix] && @filter[:path_regex]) && @datum[:path].match(@filter[:path_regex])
-				if @filter[:modify_path]
-					@datum[:path].gsub!(@filter[:path_regex],@filter[:suffix])
-				elsif @filter[:append_to_path]
-					@datum[:path] = @datum[:path] + @filter[:suffix]       
-				end
-			end  	
-  	end
-  	
-  	def self.modify_title
-			if @filter[:modify_title]
-				@datum[:title].gsub!(@filter[:title_regex], '')
-				@datum[:title].strip!
-			end  	
-  	end
-  	
-  	def self.apply_exclude
-			if @filter[:exclude] && @datum[:path].match(@filter[:path_regex])        
-					# nil out @datum.
-					# StatsCombiner::Combiner will sweep away the nils later
-					@datum[:title] = @datum[:path] = @datum[:prefix] = nil
-			end  	
-  	end
+  
   
   end
 

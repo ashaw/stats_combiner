@@ -127,7 +127,7 @@ describe "basic Filterer filtering" do
     result[:prefix].should eql("tpmdc")
   end
 
-  it 'should modify a title based on a title_regex' do
+  it 'should modify a title based on a title_regex and a modify_title boolean' do
     @f.add :prefix => 'tpmdc', :title_regex => /\| TPMDC/, :modify_title => true
     
     datum = {:visitors=>366, :created_at=>nil, :path=>"/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php", :id=>3, :title=>"With Specter Suffering, White House And GOP Looking At Surging Sestak | TPMDC"}
@@ -135,68 +135,27 @@ describe "basic Filterer filtering" do
     result = StatsCombiner::Filterer.apply_filters!(@f.filters,datum)
     result[:title].should eql("With Specter Suffering, White House And GOP Looking At Surging Sestak")
   end
+
+  it 'should modify a title based on a title_regex and a modify_title regex' do
+    @f.add :prefix => 'tpmdc', :title_regex => /(\| TPMDC)$/, :modify_title => '\1 Central'
+    
+    datum = {:visitors=>366, :created_at=>nil, :path=>"/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php", :id=>3, :title=>"With Specter Suffering, White House And GOP Looking At Surging Sestak | TPMDC"}
+
+    result = StatsCombiner::Filterer.apply_filters!(@f.filters,datum)
+    result[:title].should eql("With Specter Suffering, White House And GOP Looking At Surging Sestak | TPMDC Central")
+  end
   
-  it 'should set a suffix where it matches a path_regex and modify a path where indicated' do
-    @f.add :path_regex => /(\?ref=.*$|\&ref=.*$|)/, :suffix => '', :modify_path => true
+  it 'should set a suffix where it matches a path_regex and modify a path according to a suffix regex' do
+    @f.add :path_regex => /(\?ref=.*)$/, :suffix => '\1&foo=bar', :modify_path => true
   
     datum = {:visitors=>366, :created_at=>nil, :path=>"/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?ref=fpa", :id=>3, :title=>"With Specter Suffering, White House And GOP Looking At Surging Sestak | TPMDC"}
     
     result = StatsCombiner::Filterer.apply_filters!(@f.filters,datum)
-    result[:path].should eql("/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php")
-    
-    @f.filters.clear
-    #let's try setting pages to 1 on slideshows and galleries
-    @f.add :path_regex => /(\?page=.*$)/, :suffix => '?page=1', :modify_path => true
- 
-    datum = {:visitors=>366, :created_at=>nil, :path=>"/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?page=5", :id=>3, :title=>"With Specter Suffering, White House And GOP Looking At Surging Sestak | TPMDC"}
-    
-    result = StatsCombiner::Filterer.apply_filters!(@f.filters,datum)
-    result[:path].should eql("/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?page=1")
+    result[:path].should eql("/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?ref=fpa&foo=bar")
   end
+
   
-  it 'should set a suffix where it matches a path_regex and append a path where indicated' do
-    @f.add :path_regex => /(\?id=.*$|\?page=.*$|\?img=.*$)/, :suffix => '&ref=mp', :append_to_path => true  
-    datum = {:visitors=>366, :created_at=>nil, :path=>"/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?id=1", :id=>3, :title=>"With Specter Suffering, White House And GOP Looking At Surging Sestak | TPMDC"}
-    
-    result = StatsCombiner::Filterer.apply_filters!(@f.filters,datum)
-    result[:path].should eql("/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?id=1&ref=mp")
-  end
-
-  #?id=need&ref=dump => ?id=need
-  #?id=need => ?id=need&ref=new
-  #?ref=dump => ?ref=new
-  #<none> => ?ref=new  
-  it 'deal with query strings' do
-    
-    @f.add :path_regex => /(\?ref=.*$|\&ref=.*$|)/, :suffix => '', :modify_path => true
-    @f.add :path_regex => /(\?id=.*$|\?page=.*$|\?img=.*$)/, :suffix => '&ref=new', :append_to_path => true
-    @f.add :path_regex => /.php$/, :suffix => '?ref=new', :append_to_path => true
-
-   
-   # ?id=need&ref=dump => ?id=need&ref=new
- 
-   datum = {:visitors=>366, :created_at=>nil, :path=>"/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?id=1&ref=killthis", :id=>3, :title=>"With Specter Suffering, White House And GOP Looking At Surging Sestak | TPMDC"}    
-   
-   result = StatsCombiner::Filterer.apply_filters!(@f.filters,datum)
-   result[:path].should eql("/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?id=1&ref=new")    
- 
-   #?id=need => ?id=need&ref=new
-
-   datum = {:visitors=>366, :created_at=>nil, :path=>"/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?id=1&ref=killthis", :id=>3, :title=>"With Specter Suffering, White House And GOP Looking At Surging Sestak | TPMDC"}    
-   
-   result = StatsCombiner::Filterer.apply_filters!(@f.filters,datum)
-   result[:path].should eql("/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?id=1&ref=new")      
-
-   #<none> => ?ref=need
-
-   datum = {:visitors=>366, :created_at=>nil, :path=>"/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php", :id=>3, :title=>"With Specter Suffering, White House And GOP Looking At Surging Sestak | TPMDC"}    
-   
-   result = StatsCombiner::Filterer.apply_filters!(@f.filters,datum)
-   result[:path].should eql("/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?ref=new")         
-    
-  end
-  
-  it 'should nil out data where exclude is true' do
+  it 'should nil out data where exclude is true and path or title regexes are matched' do
     #first, two examples of a matching regex
     
     @f.add :path_regex => /(\/$|\/index.php$)/, :exclude => true
@@ -227,6 +186,18 @@ describe "basic Filterer filtering" do
     result = StatsCombiner::Filterer.apply_filters!(@f.filters,datum)
     result[:title].should_not be_nil
     result[:path].should_not be_nil
+    
+    @f.filters.clear
+    
+    #try a title match
+    @f.add :title_regex => /(Breaking News and Analysis)/, :exclude => true
+    
+    datum = {:visitors=>3090, :created_at=>nil, :path=>"/", :id=>1, :title=>"Talking Points Memo | Breaking News and Analysis"}
+    
+    result = StatsCombiner::Filterer.apply_filters!(@f.filters,datum)
+    result[:title].should be_nil
+    result[:path].should be_nil    
+    
   end
   
 end
@@ -263,20 +234,23 @@ describe "filtered StatsCombining" do
     e.add :prefix => 'www', :title_regex => /\|.*$/, :modify_title => true  
     e.add :path_regex => /(\/$|\/index.php$)/, :exclude => true  
     
-    #now, let's go through the rigamarole to get this thing pubbed.
+    # now, let's go through the rigamarole to get this thing pubbed.
     # run to setup db
     @s.run :filters => e.filters
     # run again to start publishing
     @s.run :filters => e.filters
     # timetravel to pub time and do it.
-    # set Time.now to 5 seconds past ttl
+    # * set Time.now to 5 seconds past ttl
     t = Time.now
     Timecop.travel(t + @ttl + 5)
+    
+    # add filters
     @s.run :filters => e.filters
     
-    #sanity check
+    # sanity check
     File.exist?(@flat_file).should == true
     
+    # open the file we just made
     list = File.open(@flat_file).read
     list = Hpricot(list)
     
@@ -288,13 +262,13 @@ describe "filtered StatsCombining" do
       titles << a.inner_html
     end  
     
-    #let's make sure we have 10 stories
-    urls.size.should eql 10
+    # let's make sure we have 10 stories
+    urls.size.should eql(10)
     
-    #pull prefixes from rules array
+    # pull prefixes from rules array
     prefixes = e.filters.collect { |filter| filter[:rule][:prefix] }
     
-    #test prefixes against subdomains
+    # test prefixes against subdomains
     urls.each do |url|
         subdomain = URI.parse(url).host.split('.')[0]
         prefixes.include?(subdomain).should == true
