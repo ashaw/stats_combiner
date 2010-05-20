@@ -1,6 +1,6 @@
 # StatsCombiner
 
-StatsCombiner is a ruby gem for generating most viewed widgets based on the Chartbeat API. Unlike most analytics systems, Chartbeat doesn't give you cumulative visitor counts. Rather, they take snapshots of people sitting on pages at a given time. StatsCombiner asks Chartbeat what these numbers are n times during a given `ttl` and combines visitor counts where it finds matching `<title>`s allowing popular stories to bubble up the list. When `ttl` expires, it will publish out a static HTML file with your top ten list, dump the database and start collecting again.
+StatsCombiner is a ruby gem for generating most viewed widgets based on the Chartbeat API. Unlike most analytics systems, Chartbeat doesn't give you cumulative visitor counts. Rather, they take snapshots of people sitting on pages at a given time. StatsCombiner asks Chartbeat what these numbers are n times during a given `ttl` and combines visitor counts where it finds matching `<title>`s, to allow popular stories to bubble up the list. When `ttl` expires, it will publish out a static HTML file with your top ten list, dump the database and start collecting again.
 
 ## Installation
 
@@ -8,9 +8,34 @@ StatsCombiner is a ruby gem for generating most viewed widgets based on the Char
 
 ## Usage
 
+Write a short combiner script that tells StatsCombiner your Chartbeat API parameters, how long it should combine for and where to put the flat file. Add filters to manipulate the data it will publish. 
+
+Here's an example:
+
+    require 'rubygems'
+    require 'stats_combiner'
+    
+    # initialize the script
+    s = StatsCombiner::Combiner.new({
+      :ttl => 3600, #1 hour
+      :host => 'yourdomain.com',
+      :api_key => 'YOURKEY',
+      :flat_file => '/path/to/staticfile/top_ten.html'
+    })
+        
+    # add some filters
+    e.add :path_regex => /(\/$|\/index.php$)/, :exclude => true
+    
+    # run it!
+    s.run :filters => e.filters
+
+Then add this script to your crontab. I recommend running it every 5 minutes. Just be a good API-consumer when setting your cron:
+
+    */5 * * * *       cd /path/to/combiner && ruby combiner.rb
+
 ## Author
 
-Al Shaw
+Al Shaw (al@talkingpointsmemo.com)
 
 ## License (MIT)
 

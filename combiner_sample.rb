@@ -2,9 +2,9 @@ require File.dirname(__FILE__) + './lib/stats_combiner'
 
 s = StatsCombiner::Combiner.new({
 	:ttl => 3600, 
-	:host => 'talkingpointsmemo.com',
+	:host => 'yourhost.com',
 	:api_key => 'YOURKEY',
-	:flat_file => '/Applications/MAMP/htdocs/rb_top_ten.html'
+	:flat_file => '/path/to/top_ten.html'
 })
 
 e = StatsCombiner::Filterer.new
