@@ -152,6 +152,16 @@ describe "basic Filterer filtering" do
     
     result = StatsCombiner::Filterer.apply_filters!(@f.filters,datum)
     result[:path].should eql("/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?ref=fpa&foo=bar")
+    
+    @f.filters.clear
+    
+    #another example to kill unwanted query strings
+    @f.add :path_regex => /((\?|&)ref=.*)/, :suffix => '', :modify_path => true
+ 
+     datum = {:visitors=>366, :created_at=>nil, :path=>"/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?id=keepme&ref=killme", :id=>3, :title=>"With Specter Suffering, White House And GOP Looking At Surging Sestak | TPMDC"}
+    
+    result = StatsCombiner::Filterer.apply_filters!(@f.filters,datum)
+    result[:path].should eql("/2010/05/with-specter-suffering-white-house-and-gop-looking-at-surging-sestak.php?id=keepme")
   end
 
   
