@@ -15,33 +15,25 @@ module StatsCombiner
     # Add a filter that StatsCombiner can use to manipulate paths and titles it
     # gets from Chartbeat.
     # 
-    # options:                  Pattern: <tt>http://{prefix}.{host}/{path}{suffix}</tt>
+    # Options:                            Pattern: <tt>http://{prefix}.{host}/{path}{suffix}</tt>
     #
-    #  prefix => nil            Filter on a prefix
-    #  suffix => nil            Filter on a suffix
-    #  title_regex => nil       Filter on a title pattern
-    #  path_regex=> nil         Filter on a path pattern
+    # search by..
+    #  title_regex => nil                 Filter on a title pattern
+    #  path_regex=> nil                   Filter on a path pattern
     #
-    #  modify_title => true     Modify the title inline via the regex
-    #  modify_path => true      Modify the path inline via the regex
-    #  append_to_path => true   Append suffix to path rather than modifying it
-    #  exclude => true          Exclude this pattern from the top ten list
+    # ..to add a:
+    #  suffix => nil                      a path modification
+    #  prefix => nil                      a subdomain
+    #  modify_title => bool or regexp     Modify the title inline
+    #
+    # Or, to ignore the entry:
+    #  exclude => true                    Exclude this pattern from the top ten list
     # 
     # Some examples from TPM:
     #  e.add :prefix => 'tpmdc', :title_regex => /\| TPMDC/, :modify_title => true
-    #  e.add :prefix => 'tpmmuckraker', :title_regex => /\| TPMMuckraker/, :modify_title => true
-    #  e.add :prefix => 'tpmtv', :title_regex => /\| TPMTV/, :modify_title => true
-    #  e.add :prefix => 'tpmcafe', :title_regex => /\| TPMCafe/, :modify_title => true
-    #  e.add :prefix => 'tpmlivewire', :title_regex => /\| TPM LiveWire/, :modify_title => true
-    #  e.add :prefix => 'tpmpolltracker', :title_regex => /\| TPM PollTracker/, :modify_title => true
-    #
-    #  e.add :prefix => 'www', :title_regex => /\|.*$/, :modify_title => true
     #  e.add :path_regex => /(\?ref=.*$|\&ref=.*$|)/, :suffix => '', :modify_path => true
-    #  e.add :path_regex => /(\?id=.*$|\?page=.*$|\?img=.*$)/, :suffix => '&ref=mp', :append_to_path => true
-    #
-    # Excludes are good for filtering out index pages, etc.
+    #  e.add :path_regex => /(\?(page|img)=(.*)($|&))/, :suffix => '?\2=\3'
     #  e.add :path_regex => /(\/$|\/index.php$)/, :exclude => true
-    #  
     def add(options={})   
       { :prefix => nil,
         :suffix => nil,

@@ -17,7 +17,7 @@ Here's an example:
     
     # initialize the script
     s = StatsCombiner::Combiner.new({
-      :ttl => 3600, #1 hour
+      :ttl => 3600, #1 hour from first run
       :host => 'yourdomain.com',
       :api_key => 'YOURKEY',
       :flat_file => '/path/to/staticfile/top_ten.html'
@@ -32,6 +32,32 @@ Here's an example:
 Then add this script to your crontab. I recommend running it every 5 minutes. Just be a good API-consumer when setting your cron:
 
     */5 * * * *       cd /path/to/combiner && ruby combiner.rb
+
+### Filters
+
+    http://{prefix}.{host}/{path}{suffix}
+
+search by..
+
+    :title_regex => regexp                  Filter on a title pattern
+    :path_regex=> regexp                    Filter on a path pattern
+
+..to add a:
+
+    :suffix => string or regexp             a path modification
+    :prefix => string                       a subdomain
+    :modify_title => bool or regexp         Modify the title inline
+
+Or, to ignore the entry:
+
+    :exclude => bool                        Exclude this pattern from the top ten list
+    
+Some examples from TPM:
+     
+    e.add :prefix => 'tpmdc', :title_regex => /\| TPMDC/, :modify_title => true
+    e.add :path_regex => /((\?|&)ref=.*)/, :suffix => ''
+    e.add :path_regex => /(\?(page|img)=(.*)($|&))/, :suffix => '?\2=\3'
+    e.add :path_regex => /(\/$|\/index.php$)/, :exclude => true
 
 ## Author
 

@@ -7,11 +7,8 @@ require File.dirname(__FILE__) + '/filterer'
 
 module StatsCombiner
 
-  VERSION = '0.0.1'
-  
   class Combiner
-  
-    
+
     # Usage:
     #
     #  s = StatsCombiner::Combiner.new({

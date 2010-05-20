@@ -4,3 +4,4 @@ tpm_combiner.rb
 rewrites.rb
 test
 spec/spec_credentials.rb
+pkg/
