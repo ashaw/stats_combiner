@@ -93,7 +93,7 @@ module StatsCombiner
         # modify_title => "DC Central"
         # title_regex => /| TPMDC/,  modify_title => '\1 Central' ==> TPMDC Central
         if filter[:rule][:modify_title]
-        	filter[:rule][:modify_title] = '' unless filter[:rule][:modify_title].is_a?(String)
+          filter[:rule][:modify_title] = '' unless filter[:rule][:modify_title].is_a?(String)
           datum[:title].gsub!(filter[:rule][:title_regex], filter[:rule][:modify_title])
           datum[:title].strip!
         end
