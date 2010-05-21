@@ -18,9 +18,9 @@ describe "an unfiltered StatsCombiner cycle" do
       :ttl => @ttl, 
       :host=> HOST,
       :api_key=> KEY,
-      :flat_file => @flat_file
+      :flat_file => @flat_file,
     })
-    @db_file = File.dirname(__FILE__) + '/stats_db.sqlite3'
+    @db_file = "#{HOST}_stats_db.sqlite3"
   end
   
   it 'should do a first-time run, setting up the db' do
@@ -226,9 +226,9 @@ describe "filtered StatsCombining" do
       :ttl => @ttl, 
       :host=> HOST,
       :api_key=> KEY,
-      :flat_file => @flat_file
+      :flat_file => @flat_file,
     })
-    @db_file = File.dirname(__FILE__) + '/stats_db.sqlite3'
+    @db_file = "#{HOST}_stats_db.sqlite3"
   end
 
   it 'should run its way through the cycle and publish out a top ten list according to filter rules' do

@@ -1,6 +1,8 @@
 # StatsCombiner
 
-StatsCombiner is a ruby gem for generating most viewed widgets based on the Chartbeat API. Unlike most analytics systems, Chartbeat doesn't give you cumulative visitor counts. Rather, they take snapshots of people sitting on pages at a given time. StatsCombiner asks Chartbeat what these numbers are n times during a given `ttl` and combines visitor counts where it finds matching `<title>`s, to allow popular stories to bubble up the list. When `ttl` expires, it will publish out a static HTML file with your top ten list, dump the database and start collecting again.
+StatsCombiner is a ruby gem for generating most viewed widgets based on the Chartbeat API. Unlike most analytics systems, Chartbeat doesn't give you cumulative visitor counts. Rather, they take snapshots of people sitting on pages at a given time. StatsCombiner asks Chartbeat what these numbers are n times during a given `ttl` and combines visitor counts where it finds matching `<title>`s, to allow popular stories to bubble up the list. When `ttl` expires, it will publish out a static HTML file with your top ten list to a location of your choosing, trash its database and start collecting again.
+
+This gem is a rewrite from the PHP implementation I wrote about [here](http://blog.chartbeat.com/2009/08/04/guest-post-how-talking-points-memo-uses-chartbeat/).
 
 ## Installation
 
@@ -27,7 +29,10 @@ Here's an example:
     e.add :path_regex => /(\/$|\/index.php$)/, :exclude => true
     
     # run it!
-    s.run :filters => e.filters
+    s.run({
+      :filters => e.filters,
+      :verbose => true  #this option reports combining status and TTL when true
+     })
 
 Then add this script to your crontab. I recommend running it every 5 minutes. Just be a good API-consumer when setting your cron:
 
@@ -39,25 +44,35 @@ Then add this script to your crontab. I recommend running it every 5 minutes. Ju
 
 search by..
 
-    :title_regex => regexp                  Filter on a title pattern
-    :path_regex=> regexp                    Filter on a path pattern
+    :title_regex => regexp                # Filter on a title pattern
+    :path_regex=> regexp                  # Filter on a path pattern
 
 ..to add a:
 
-    :suffix => string or regexp             a path modification
-    :prefix => string                       a subdomain
-    :modify_title => bool or regexp         Modify the title inline
+    :suffix => string or regexp           # a path modification
+    :prefix => string                     # a subdomain
+    :modify_title => bool or regexp       # Modify the title inline 
+                                          # (true replaces title match with '')
 
-Or, to ignore the entry:
+..or, to ignore the entry:
 
-    :exclude => bool                        Exclude this pattern from the top ten list
+    :exclude => bool                      # Exclude matching URLs from the top ten list
     
 Some examples from TPM:
      
     e.add :prefix => 'tpmdc', :title_regex => /\| TPMDC/, :modify_title => true
     e.add :path_regex => /((\?|&)ref=.*)/, :suffix => ''
-    e.add :path_regex => /(\?(page|img)=(.*)($|&))/, :suffix => '?\2=\3'
+    e.add :path_regex => /(\?(page|img)=(.*)($|&))/, :suffix => '?\2=1'
     e.add :path_regex => /(\/$|\/index.php$)/, :exclude => true
+
+### A note on testing
+
+Before running the test suite, create a file called `spec_credentials.rb` in /spec with the contents:
+
+    KEY = 'your_api_key'
+    HOST = 'yourdomain.com'
+    
+You may also need to `sudo spec` if your user doesn't have write access to the gems directory.
 
 ## Author
 

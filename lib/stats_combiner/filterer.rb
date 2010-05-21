@@ -32,7 +32,7 @@ module StatsCombiner
     # Some examples from TPM:
     #  e.add :prefix => 'tpmdc', :title_regex => /\| TPMDC/, :modify_title => true
     #  e.add :path_regex => /(\?ref=.*$|\&ref=.*$|)/, :suffix => '', :modify_path => true
-    #  e.add :path_regex => /(\?(page|img)=(.*)($|&))/, :suffix => '?\2=\3'
+    #  e.add :path_regex => /(\?(page|img)=(.*)($|&))/, :suffix => '?\2=1'
     #  e.add :path_regex => /(\/$|\/index.php$)/, :exclude => true
     def add(options={})   
       { :prefix => nil,

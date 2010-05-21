@@ -5,3 +5,4 @@ spec/spec_credentials.rb
 rewrites.rb
 test/*
 pkg/*
+*.gem

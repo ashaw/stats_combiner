@@ -1,12 +1,11 @@
 require 'open-uri'
 require 'fileutils'
-require 'rubygems'
 require 'crack/json'
 require 'sequel'
-require File.dirname(__FILE__) + '/filterer'
+require 'stats_combiner/filterer'
 
 module StatsCombiner
-
+	
   class Combiner
 
     # Usage:
@@ -23,7 +22,7 @@ module StatsCombiner
         :story_count => 10,
         :flat_file => 'topten.html',
       }.merge!(opts)
-      @db_file = "stats_db.sqlite3"
+      @db_file = "#{@init_options[:host]}_stats_db.sqlite3"
     end
 
     # check where we are in the cycle
