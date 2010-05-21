@@ -21,8 +21,8 @@ Gem::Specification.new do |s|
      "Rakefile",
      "VERSION",
      "combiner_sample.rb",
-     "lib/filterer.rb",
      "lib/stats_combiner.rb",
+     "lib/stats_combiner/filterer.rb",
      "spec/stats_combiner_spec.rb",
      "stats_combiner.gemspec"
   ]
