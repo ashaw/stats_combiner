@@ -23,7 +23,8 @@ Gem::Specification.new do |s|
      "combiner_sample.rb",
      "lib/filterer.rb",
      "lib/stats_combiner.rb",
-     "spec/stats_combiner_spec.rb"
+     "spec/stats_combiner_spec.rb",
+     "stats_combiner.gemspec"
   ]
   s.homepage = %q{http://github.com/ashaw/stats_combiner}
   s.rdoc_options = ["--charset=UTF-8"]
@@ -31,10 +32,7 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.6}
   s.summary = %q{StatsCombiner creates most viewed widgets from the Chartbeat API}
   s.test_files = [
-    "spec/stats_combiner_spec.rb",
-     "test/combiner_test.rb",
-     "test/filter_test.rb",
-     "test/test_data.rb"
+    "spec/stats_combiner_spec.rb"
   ]
 
   if s.respond_to? :specification_version then
