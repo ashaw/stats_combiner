@@ -9,8 +9,8 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Al Shaw"]
-  s.date = %q{2010-05-21}
-  s.description = %q{A tool to create most viewed widgets from the Chartbeat API.}
+  s.date = %q{2010-05-22}
+  s.description = %q{A tool to create most-viewed story widgets from the Chartbeat API.}
   s.email = %q{almshaw@gmail.com}
   s.extra_rdoc_files = [
     "README.md"
@@ -24,15 +24,17 @@ Gem::Specification.new do |s|
      "lib/stats_combiner.rb",
      "lib/stats_combiner/filterer.rb",
      "spec/stats_combiner_spec.rb",
+     "spec/test_data.rb",
      "stats_combiner.gemspec"
   ]
-  s.homepage = %q{http://github.com/ashaw/stats_combiner}
+  s.homepage = %q{http://github.com/tpm/stats_combiner}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.6}
-  s.summary = %q{StatsCombiner creates most viewed widgets from the Chartbeat API}
+  s.summary = %q{StatsCombiner creates most-viewed story widgets from the Chartbeat API}
   s.test_files = [
-    "spec/stats_combiner_spec.rb"
+    "spec/stats_combiner_spec.rb",
+     "spec/test_data.rb"
   ]
 
   if s.respond_to? :specification_version then
@@ -43,12 +45,14 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<crack>, [">= 0"])
       s.add_runtime_dependency(%q<sequel>, [">= 0"])
       s.add_development_dependency(%q<rspec>, [">= 0"])
+      s.add_development_dependency(%q<fakeweb>, [">= 0"])
       s.add_development_dependency(%q<timecop>, [">= 0"])
       s.add_development_dependency(%q<hpricot>, [">= 0"])
     else
       s.add_dependency(%q<crack>, [">= 0"])
       s.add_dependency(%q<sequel>, [">= 0"])
       s.add_dependency(%q<rspec>, [">= 0"])
+      s.add_dependency(%q<fakeweb>, [">= 0"])
       s.add_dependency(%q<timecop>, [">= 0"])
       s.add_dependency(%q<hpricot>, [">= 0"])
     end
@@ -56,6 +60,7 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<crack>, [">= 0"])
     s.add_dependency(%q<sequel>, [">= 0"])
     s.add_dependency(%q<rspec>, [">= 0"])
+    s.add_dependency(%q<fakeweb>, [">= 0"])
     s.add_dependency(%q<timecop>, [">= 0"])
     s.add_dependency(%q<hpricot>, [">= 0"])
   end

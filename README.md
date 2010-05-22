@@ -67,12 +67,7 @@ Some examples from TPM:
 
 ### A note on testing
 
-Before running the test suite, create a file called `spec_credentials.rb` in /spec with the contents:
-
-    KEY = 'your_api_key'
-    HOST = 'yourdomain.com'
-    
-You may also need to `sudo spec` if your user doesn't have write access to the gems directory.
+You may need to `sudo spec` if your user doesn't have write access to the gems directory.
 
 ## Author
 

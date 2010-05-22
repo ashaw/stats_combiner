@@ -1,13 +1,12 @@
 require '../lib/stats_combiner'
-require 'spec_credentials'
-# spec_credentials.rb should include:
-# KEY = 'chartbeat_api_key'
-# HOST = 'your_chartbeat_host.com'
+require 'test_data'
 
 require 'spec'
 require 'timecop'
 require 'hpricot'
 
+HOST = 'fake.com'
+KEY = 'fake_key'
 
 describe "an unfiltered StatsCombiner cycle" do
 
