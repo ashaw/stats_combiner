@@ -1,6 +1,6 @@
 # StatsCombiner
 
-StatsCombiner is a ruby gem for generating most viewed widgets based on the Chartbeat API. Unlike most analytics systems, Chartbeat doesn't give you cumulative visitor counts. Rather, they take snapshots of people sitting on pages at a given time. StatsCombiner asks Chartbeat what these numbers are n times during a given `ttl` and combines visitor counts where it finds matching `<title>`s, to allow popular stories to bubble up the list. When `ttl` expires, it will publish out a static HTML file with your top ten list to a location of your choosing, trash its database and start collecting again.
+StatsCombiner is a Ruby gem for generating most-viewed widgets from the [Chartbeat API](http://chartbeat.pbworks.com/). Unlike most analytics systems, Chartbeat doesn't give you cumulative visitor counts. Rather, it takes live snapshots of people sitting on pages at a given time. StatsCombiner asks Chartbeat what these numbers are every `n` minutes during a given `ttl` and combines visitor counts where it finds matching `<title>`s, to allow popular stories to bubble up the list. When `ttl` expires, it will publish out a static HTML file with your top ten list to a location of your choosing, trash its database and start collecting again.
 
 This gem is a rewrite from the PHP implementation I wrote about [here](http://blog.chartbeat.com/2009/08/04/guest-post-how-talking-points-memo-uses-chartbeat/).
 
@@ -25,7 +25,8 @@ Here's an example:
       :flat_file => '/path/to/staticfile/top_ten.html'
     })
         
-    # add some filters
+    # create a filters object and add some filters
+    e = StatsCombiner::Filterer.new
     e.add :path_regex => /(\/$|\/index.php$)/, :exclude => true
     
     # run it!
@@ -36,7 +37,7 @@ Here's an example:
 
 Then add this script to your crontab. I recommend running it every 5 minutes. Just be a good API-consumer when setting your cron:
 
-    */5 * * * *       cd /path/to/combiner && ruby combiner.rb
+    */5 * * * *       cd /path/to/my_combiner && ruby my_combiner.rb
 
 ### Filters
 

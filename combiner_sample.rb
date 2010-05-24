@@ -1,4 +1,5 @@
-require File.dirname(__FILE__) + './lib/stats_combiner'
+require 'rubygems'
+require 'stats_combiner'
 
 s = StatsCombiner::Combiner.new({
 	:ttl => 3600, 
