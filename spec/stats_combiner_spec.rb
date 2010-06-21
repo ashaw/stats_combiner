@@ -1,9 +1,4 @@
-require '../lib/stats_combiner'
-require 'test_data'
-
-require 'spec'
-require 'timecop'
-require 'hpricot'
+require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 HOST = 'fake.com'
 KEY = 'fake_key'

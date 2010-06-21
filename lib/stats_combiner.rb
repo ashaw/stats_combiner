@@ -1,6 +1,6 @@
 require 'open-uri'
 require 'fileutils'
-require 'crack/json'
+require 'chartbeat'
 require 'sequel'
 require 'stats_combiner/filterer'
 
@@ -105,10 +105,8 @@ module StatsCombiner
     def combine
       host = @init_options[:host]
       api_key = @init_options[:api_key]
-      @url = "http://api.chartbeat.com/toppages/?host=#{host}&limit=50&apikey=#{api_key}"
-      
-      @data = open(@url).read
-      @data = Crack::JSON.parse(@data)
+      chartbeat = Chartbeat.new :host => host, :apikey => api_key
+      @data = chartbeat.toppages :limit => 50
     
       @data.each do |datum|
         visitors = datum['visitors']
