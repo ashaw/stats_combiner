@@ -179,9 +179,11 @@ describe "basic Filterer filtering" do
     result = StatsCombiner::Filterer.apply_filters!(@f.filters,datum)
     result[:title].should be_nil
     result[:path].should be_nil
-   
-    @f.filters.clear
-    
+     
+  end
+  
+  it 'should not nil out data when path or title regexes are unmatched' do
+  
     #now, let's look for invalid data. run a regex against a nonmatch
     @f.add :path_regex => /(\/$|\/index.php$)/, :exclude => true
     
@@ -202,6 +204,26 @@ describe "basic Filterer filtering" do
     result[:title].should be_nil
     result[:path].should be_nil    
     
+  end
+  
+  it 'should handle multiple exclude rules by avoiding putting nils through filters twice' do
+  
+    @f.add :path_regex => /(\/$|\/index.php$)/, :exclude => true
+    @f.add :path_regex => /talk\/blogs/, :exclude => true
+    
+    datum_1 = {:visitors=>3090, :created_at=>nil, :path=>"/", :id=>1, :title=>"Talking Points Memo | Breaking News and Analysis"}
+    
+    result_1 = StatsCombiner::Filterer.apply_filters!(@f.filters,datum_1)
+    result_1[:title].should be_nil
+    result_1[:path].should be_nil
+    
+    
+    datum_2 = {:visitors=>6, :created_at=>nil, :path=>"/talk/blogs/a/m/americandad/2010/03/an-open-letter-to-conservative.php/", :id=>31, :title=>"An open letter to conservatives | AmericanDad's Blog"}
+    
+    result_2 = StatsCombiner::Filterer.apply_filters!(@f.filters,datum_2)
+    result_2[:title].should be_nil
+    result_2[:path].should be_nil  
+  
   end
   
 end
